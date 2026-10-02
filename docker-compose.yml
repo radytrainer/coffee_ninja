@@ -1,0 +1,131 @@
+name: gesture-coffee-shop
+
+# Development:  docker compose up -d postgres      (run apps with npm run dev)
+# Full stack:   docker compose up -d --build        (postgres, backend, kiosk, admin, kitchen)
+# + vision:     docker compose --profile vision up -d --build   (Linux hosts with /dev/video0)
+
+x-public-env: &public-build-args
+  NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+  NEXT_PUBLIC_VISION_WS_URL: ${NEXT_PUBLIC_VISION_WS_URL:-ws://localhost:8765/ws/gesture}
+  NEXT_PUBLIC_VISION_HTTP_URL: ${NEXT_PUBLIC_VISION_HTTP_URL:-http://localhost:8765}
+  NEXT_PUBLIC_INPUT_MODE: ${NEXT_PUBLIC_INPUT_MODE:-gesture}
+  NEXT_PUBLIC_KIOSK_CODE: ${NEXT_PUBLIC_KIOSK_CODE:-KIOSK-01}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-coffee}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-gesture_coffee}
+    ports:
+      - '${POSTGRES_PORT:-5440}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-coffee}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-gesture_coffee}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3010,http://localhost:3020}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SEED_ON_START: ${SEED_ON_START:-true}
+      SEED_DEMO_ORDERS: ${SEED_DEMO_ORDERS:-false}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@pnccoffee.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD in .env}
+      SEED_STAFF_EMAIL: ${SEED_STAFF_EMAIL:-barista@pnccoffee.local}
+      SEED_STAFF_PASSWORD: ${SEED_STAFF_PASSWORD:?Set SEED_STAFF_PASSWORD in .env}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-demo}
+      PAYMENT_PUBLIC_URL: ${PAYMENT_PUBLIC_URL:-}
+      PAYMENT_TIMEOUT_SECONDS: ${PAYMENT_TIMEOUT_SECONDS:-300}
+      CASH_PAYMENT_TIMEOUT_SECONDS: ${CASH_PAYMENT_TIMEOUT_SECONDS:-900}
+      SMILE_TOKEN_SECRET: ${SMILE_TOKEN_SECRET:-}
+    ports:
+      - '4000:4000'
+
+  kiosk:
+    build:
+      context: .
+      dockerfile: docker/next.Dockerfile
+      args:
+        APP: kiosk
+        <<: *public-build-args
+    restart: unless-stopped
+    depends_on: [backend]
+    environment:
+      PORT: 3000
+    ports:
+      - '3000:3000'
+
+  admin:
+    build:
+      context: .
+      dockerfile: docker/next.Dockerfile
+      args:
+        APP: admin
+        <<: *public-build-args
+    restart: unless-stopped
+    depends_on: [backend]
+    environment:
+      PORT: 3010
+    ports:
+      - '3010:3010'
+
+  kitchen:
+    build:
+      context: .
+      dockerfile: docker/next.Dockerfile
+      args:
+        APP: kitchen
+        <<: *public-build-args
+    restart: unless-stopped
+    depends_on: [backend]
+    environment:
+      PORT: 3020
+    ports:
+      - '3020:3020'
+
+  vision:
+    profiles: ['vision']
+    build:
+      context: .
+      dockerfile: docker/vision.Dockerfile
+    restart: unless-stopped
+    devices:
+      - /dev/video0:/dev/video0
+    environment:
+      VISION_ALLOWED_ORIGINS: ${VISION_ALLOWED_ORIGINS:-http://localhost:3000}
+      CAMERA_INDEX: ${CAMERA_INDEX:-0}
+      CURSOR_SMOOTHING: ${CURSOR_SMOOTHING:-0.55}
+      PINCH_THRESHOLD: ${PINCH_THRESHOLD:-0.33}
+      PINCH_RELEASE_THRESHOLD: ${PINCH_RELEASE_THRESHOLD:-0.48}
+      PINCH_COOLDOWN: ${PINCH_COOLDOWN:-450}
+      GESTURE_CONFIDENCE: ${GESTURE_CONFIDENCE:-0.6}
+      SMILE_TOKEN_SECRET: ${SMILE_TOKEN_SECRET:-}
+    volumes:
+      - visiondata:/data
+    ports:
+      - '8765:8765'
+
+volumes:
+  pgdata:
+  visiondata:

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#a98670"/>
+      <stop offset="100%" stop-color="#43291c"/>
+    </radialGradient>
+    <linearGradient id="shine" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="45%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#2b1a10" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="330" cy="70" r="90" fill="#fff" opacity="0.07"/>
+  <circle cx="60" cy="350" r="110" fill="#fff" opacity="0.05"/>
+  <ellipse cx="200" cy="338" rx="130" ry="18" fill="#2b1a10" opacity="0.18"/>
+  <g filter="url(#soft)">
+    <rect x="232" y="40" width="14" height="150" rx="7" fill="#2a9d8f" transform="rotate(12 239 115)"/>
+    <clipPath id="glass"><path d="M112 118h176l-14 196c-1 12-10 18-22 18H148c-12 0-21-6-22-18z"/></clipPath>
+    <g clip-path="url(#glass)">
+      <rect x="100" y="110" width="200" height="230" fill="#ffffff" opacity="0.25"/>
+      <rect x="120" y="185" width="160" height="137" fill="#3a1f12"/><rect x="120" y="140" width="160" height="47" fill="#5a3322"/>
+      <g fill="#fff" opacity="0.55">
+        <rect x="140" y="170" width="44" height="40" rx="8" transform="rotate(-12 162 190)"/>
+        <rect x="200" y="196" width="44" height="40" rx="8" transform="rotate(14 222 216)"/>
+        <rect x="160" y="236" width="40" height="36" rx="8" transform="rotate(6 180 254)"/>
+      </g>
+    </g>
+    <path d="M112 118h176l-14 196c-1 12-10 18-22 18H148c-12 0-21-6-22-18z" fill="url(#shine)" stroke="#fff" stroke-opacity="0.6" stroke-width="4"/>
+    <ellipse cx="200" cy="118" rx="88" ry="12" fill="#fff" opacity="0.5"/>
+  </g>
+</svg>

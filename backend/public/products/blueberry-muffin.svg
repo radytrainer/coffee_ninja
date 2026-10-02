@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#e8c3a2"/>
+      <stop offset="100%" stop-color="#8c5a3c"/>
+    </radialGradient>
+    <linearGradient id="shine" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="45%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#2b1a10" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="330" cy="70" r="90" fill="#fff" opacity="0.07"/>
+  <circle cx="60" cy="350" r="110" fill="#fff" opacity="0.05"/>
+  <ellipse cx="200" cy="338" rx="130" ry="18" fill="#2b1a10" opacity="0.18"/>
+  <g filter="url(#soft)">
+    <path d="M120 220h160l-20 100H140z" fill="#c8553d"/>
+    <path d="M140 220l10 100M170 220l4 100M200 220v100M230 220l-4 100M260 220l-10 100" stroke="#9e3b27" stroke-width="5"/>
+    <path d="M100 230c-10-70 50-110 100-110s110 40 100 110z" fill="#e7a95b"/>
+    <g fill="#4a2a6b"><circle cx="160" cy="170" r="10"/><circle cx="215" cy="150" r="10"/><circle cx="245" cy="195" r="10"/><circle cx="180" cy="205" r="9"/></g>
+  </g>
+</svg>

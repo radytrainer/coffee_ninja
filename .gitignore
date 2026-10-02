@@ -1,0 +1,47 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# env / secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+
+# logs
+*.log
+npm-debug.log*
+
+# tests
+coverage/
+playwright-report/
+test-results/
+.pytest_cache/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+services/vision/models/*.task
+services/vision/calibration.json
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# backups
+backups/
+logs/

@@ -1,0 +1,276 @@
+// Gesture Coffee Shop — database schema
+// Money is stored as NUMERIC(10,2). Order lines snapshot names/prices so that
+// historical orders stay correct when the menu changes later.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum OrderStatus {
+  /// Created at the kiosk; waiting for the QR payment. Not visible to the kitchen.
+  PENDING_PAYMENT
+  NEW
+  ACCEPTED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+enum SelectionType {
+  SINGLE
+  MULTIPLE
+}
+
+enum InputMode {
+  GESTURE
+  MOUSE
+}
+
+model User {
+  id             String               @id @default(cuid())
+  email          String               @unique
+  name           String
+  passwordHash   String
+  role           Role                 @default(STAFF)
+  active         Boolean              @default(true)
+  /// Incremented on logout / password change / deactivation to revoke issued tokens.
+  sessionVersion Int                  @default(0)
+  lastLoginAt    DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  statusChanges  OrderStatusHistory[]
+
+  @@index([role])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  image       String?
+  sortOrder   Int       @default(0)
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@index([active, sortOrder])
+}
+
+model Product {
+  id             String                   @id @default(cuid())
+  name           String                   @unique
+  description    String?
+  price          Decimal                  @db.Decimal(10, 2)
+  image          String?
+  categoryId     String
+  category       Category                 @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  available      Boolean                  @default(true)
+  featured       Boolean                  @default(false)
+  sortOrder      Int                      @default(0)
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  optionGroups   ProductOptionGroupLink[]
+  orderItems     OrderItem[]
+  inventoryItems InventoryItem[]
+
+  @@index([categoryId, sortOrder])
+  @@index([available])
+}
+
+/// Reusable option group (e.g. "Size", "Milk") that can be attached to many products.
+model ProductOptionGroup {
+  id            String                   @id @default(cuid())
+  name          String                   @unique
+  description   String?
+  selectionType SelectionType            @default(SINGLE)
+  required      Boolean                  @default(false)
+  minSelect     Int                      @default(0)
+  maxSelect     Int                      @default(1)
+  sortOrder     Int                      @default(0)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  options       ProductOption[]
+  products      ProductOptionGroupLink[]
+}
+
+/// Many-to-many link between products and reusable option groups.
+model ProductOptionGroupLink {
+  productId String
+  groupId   String
+  sortOrder Int                @default(0)
+  product   Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  group     ProductOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([productId, groupId])
+  @@index([groupId])
+}
+
+model ProductOption {
+  id           String             @id @default(cuid())
+  groupId      String
+  group        ProductOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name         String
+  priceDelta   Decimal            @default(0) @db.Decimal(10, 2)
+  isDefault    Boolean            @default(false)
+  available    Boolean            @default(true)
+  sortOrder    Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  orderOptions OrderItemOption[]
+
+  @@unique([groupId, name])
+  @@index([groupId, sortOrder])
+}
+
+model Order {
+  id             String               @id @default(cuid())
+  orderNumber    String               @unique
+  status         OrderStatus          @default(NEW)
+  subtotal       Decimal              @db.Decimal(10, 2)
+  /// Taken off the subtotal before tax (e.g. the smile discount).
+  discount       Decimal              @default(0) @db.Decimal(10, 2)
+  discountReason String?
+  /// Nonce of the redeemed smile token — unique, so each smile is used once.
+  smileNonce     String?              @unique
+  tax            Decimal              @db.Decimal(10, 2)
+  total          Decimal              @db.Decimal(10, 2)
+  taxRate        Decimal              @db.Decimal(5, 4)
+  kioskId        String?
+  kiosk          Kiosk?               @relation(fields: [kioskId], references: [id], onDelete: SetNull)
+  completedAt    DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  payment        Payment?
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
+
+/// QR payment for an order (one per order).
+model Payment {
+  id        String        @id @default(cuid())
+  orderId   String        @unique
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// demo | manual (staff marked paid) | future bank providers (e.g. KHQR)
+  provider  String
+  status    PaymentStatus @default(PENDING)
+  amount    Decimal       @db.Decimal(10, 2)
+  currency  String
+  /// Random reference encoded in the QR (unguessable).
+  reference String        @unique
+  /// What the QR code contains (payment URL or bank QR string).
+  qrPayload String
+  expiresAt DateTime
+  paidAt    DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, expiresAt])
+}
+
+model OrderItem {
+  id          String            @id @default(cuid())
+  orderId     String
+  order       Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  /// Snapshot of the product name at order time.
+  productName String
+  quantity    Int
+  /// Snapshot of the product base price at order time.
+  basePrice   Decimal           @db.Decimal(10, 2)
+  /// basePrice + selected option deltas.
+  unitPrice   Decimal           @db.Decimal(10, 2)
+  lineTotal   Decimal           @db.Decimal(10, 2)
+  notes       String?
+  options     OrderItemOption[]
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model OrderItemOption {
+  id          String         @id @default(cuid())
+  orderItemId String
+  orderItem   OrderItem      @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  optionId    String?
+  option      ProductOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
+  groupName   String
+  optionName  String
+  priceDelta  Decimal        @db.Decimal(10, 2)
+
+  @@index([orderItemId])
+}
+
+model OrderStatusHistory {
+  id          String      @id @default(cuid())
+  orderId     String
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status      OrderStatus
+  note        String?
+  changedById String?
+  changedBy   User?       @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model InventoryItem {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  unit              String
+  quantity          Decimal  @default(0) @db.Decimal(12, 3)
+  lowStockThreshold Decimal  @default(0) @db.Decimal(12, 3)
+  productId         String?
+  product           Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Kiosk {
+  id                    String    @id @default(cuid())
+  code                  String    @unique
+  name                  String
+  location              String?
+  active                Boolean   @default(true)
+  inputMode             InputMode @default(GESTURE)
+  sessionTimeoutSeconds Int       @default(60)
+  successResetSeconds   Int       @default(20)
+  hoverDelayMs          Int       @default(250)
+  lastSeenAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  orders                Order[]
+}
+
+/// Global key/value settings (shop name, tax rate, currency, order prefix...).
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

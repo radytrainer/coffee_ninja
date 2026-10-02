@@ -1,0 +1,49 @@
+{
+  "name": "gesture-coffee-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Touchless gesture-controlled coffee shop ordering system (kiosk, kitchen, admin, backend, vision service).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "backend",
+    "apps/*"
+  ],
+  "scripts": {
+    "verify": "node scripts/verify-tools.mjs",
+    "build:types": "npm run build -w @gcs/types",
+    "postinstall": "npm run build:types",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose stop postgres",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:deploy": "npm run db:deploy -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:reset": "npm run db:reset -w backend",
+    "db:backup": "node scripts/backup-db.mjs",
+    "dev": "concurrently -n api,kiosk,admin,kitchen -c blue,yellow,magenta,green \"npm:dev:backend\" \"npm:dev:kiosk\" \"npm:dev:admin\" \"npm:dev:kitchen\"",
+    "dev:backend": "npm run dev -w backend",
+    "dev:kiosk": "npm run dev -w kiosk",
+    "dev:admin": "npm run dev -w admin",
+    "dev:kitchen": "npm run dev -w kitchen",
+    "dev:vision": "node scripts/run-vision.mjs",
+    "dev:vision:sim": "node scripts/run-vision.mjs simulate",
+    "setup:vision": "node scripts/run-vision.mjs setup",
+    "build": "npm run build:types && npm run build -w backend && npm run build -w kiosk && npm run build -w admin && npm run build -w kitchen",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:vision": "node scripts/run-vision.mjs test",
+    "test:e2e": "npm run test:e2e -w kiosk",
+    "cloudflare": "cloudflared tunnel --url http://localhost:8000",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.9.9",
+    "typescript": "5.9.3"
+  }
+}

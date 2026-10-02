@@ -1,0 +1,17 @@
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/playwright-report
+**/test-results
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/*.tsbuildinfo
+.git
+.env
+.env.*
+!.env.example
+services/vision/calibration.json
+services/vision/models/*.task
+backups

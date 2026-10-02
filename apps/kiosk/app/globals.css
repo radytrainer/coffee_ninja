@@ -1,0 +1,443 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   PNC Coffee kiosk — design tokens
+   ============================================================ */
+@theme {
+  --font-sans: 'Outfit Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+
+  --color-espresso-950: #140b07;
+  --color-espresso-900: #1f130c;
+  --color-espresso-800: #2c1b11;
+  --color-espresso-700: #3d2617;
+  --color-espresso-600: #573822;
+
+  --color-crema-50: #fdf8f1;
+  --color-crema-100: #f7ecdd;
+  --color-crema-200: #ecd9bf;
+  --color-crema-300: #dcc09a;
+  --color-crema-400: #c4a47c;
+
+  --color-caramel-200: #f8d9a8;
+  --color-caramel-300: #f3c07a;
+  --color-caramel-400: #eaa54f;
+  --color-caramel-500: #d98a2b;
+  --color-caramel-600: #b86e1b;
+
+  --color-mint-300: #9be7c4;
+  --color-mint-400: #6fd6a8;
+  --color-mint-500: #3fbf87;
+  --color-berry-300: #f7a3a3;
+  --color-berry-400: #f27979;
+  --color-berry-500: #e05353;
+
+  --radius-card: 1.75rem;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-fade-up: fade-up 0.5s var(--ease-out-soft) both;
+  --animate-pop: pop 0.45s var(--ease-spring) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.2s ease-out infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-steam: steam 3.2s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes steam {
+    0% {
+      opacity: 0;
+      transform: translateY(8px) scaleY(0.9);
+    }
+    40% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-22px) scaleY(1.1);
+    }
+  }
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+@layer base {
+  html {
+    /* Fluid root size: ~21px at 1920×1080, ~14px at 1280×720. All spacing uses rem. */
+    font-size: clamp(13px, calc(0.9vw + 0.35vh), 24px);
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  body {
+    @apply bg-espresso-950 font-sans text-crema-100 antialiased;
+    background-image:
+      radial-gradient(60rem 40rem at 85% -10%, rgb(217 138 43 / 0.18), transparent 60%),
+      radial-gradient(50rem 40rem at -10% 110%, rgb(160 90 50 / 0.22), transparent 60%),
+      radial-gradient(40rem 30rem at 50% 50%, rgb(61 38 23 / 0.6), transparent 70%);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  /* Subtle film grain for a premium, non-flat finish */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  img {
+    -webkit-user-drag: none;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-caramel-300);
+    outline-offset: 4px;
+    border-radius: 1rem;
+  }
+  /* In gesture mode the OS pointer is hidden; the virtual cursor replaces it. */
+  html[data-input-mode='gesture']:not([data-mouse-active='true']) body,
+  html[data-input-mode='gesture']:not([data-mouse-active='true']) body * {
+    cursor: none !important;
+  }
+}
+
+/* ============================================================
+   Components
+   ============================================================ */
+@layer components {
+  .glass {
+    background: linear-gradient(145deg, rgb(255 248 240 / 0.085), rgb(255 248 240 / 0.035));
+    border: 1px solid rgb(255 240 220 / 0.12);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.06) inset,
+      0 24px 48px -24px rgb(0 0 0 / 0.6);
+  }
+  .glass-strong {
+    background: linear-gradient(145deg, rgb(255 248 240 / 0.14), rgb(255 248 240 / 0.06));
+    border: 1px solid rgb(255 240 220 / 0.18);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
+  }
+
+  /* Every interactive element carries data-gesture-target. */
+  .gesture-target {
+    position: relative;
+    transition:
+      transform 0.22s var(--ease-out-soft),
+      box-shadow 0.22s var(--ease-out-soft),
+      background-color 0.22s ease,
+      border-color 0.22s ease,
+      opacity 0.2s ease;
+    will-change: transform;
+  }
+  .gesture-target[data-gesture-hover='true'],
+  html[data-input-mode='mouse'] .gesture-target:not(:disabled):not([aria-disabled='true']):hover,
+  html[data-mouse-active='true'] .gesture-target:not(:disabled):not([aria-disabled='true']):hover {
+    transform: translateY(-3px) scale(1.015);
+    box-shadow:
+      0 0 0 3px rgb(243 192 122 / 0.85),
+      0 18px 40px -12px rgb(217 138 43 / 0.55);
+  }
+  .gesture-target[data-gesture-armed='true'] {
+    box-shadow:
+      0 0 0 4px rgb(248 217 168 / 1),
+      0 0 32px 4px rgb(234 165 79 / 0.55);
+  }
+  .gesture-target[data-gesture-pressed='true'],
+  .gesture-target:active:not(:disabled) {
+    transform: scale(0.96);
+    transition-duration: 0.08s;
+  }
+  .gesture-target:disabled,
+  .gesture-target[aria-disabled='true'] {
+    opacity: 0.45;
+    filter: saturate(0.5);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-3 rounded-full px-8 py-4 text-xl font-semibold tracking-tight outline-none;
+    min-height: 4rem;
+  }
+  /* Variants are combined with .btn in JSX: className="btn btn-primary gesture-target" */
+  .btn-primary {
+    color: var(--color-espresso-950);
+    background: linear-gradient(180deg, var(--color-caramel-300), var(--color-caramel-500));
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.5) inset,
+      0 12px 28px -10px rgb(217 138 43 / 0.7);
+  }
+  .btn-secondary {
+    color: var(--color-crema-50);
+    background: linear-gradient(145deg, rgb(255 248 240 / 0.1), rgb(255 248 240 / 0.04));
+    border: 1px solid rgb(255 240 220 / 0.16);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+  .btn-ghost {
+    color: var(--color-crema-200);
+    background: transparent;
+  }
+  .btn-danger {
+    color: var(--color-crema-50);
+    background: rgb(224 83 83 / 0.18);
+    border: 1px solid rgb(242 121 121 / 0.4);
+  }
+  .icon-btn {
+    @apply inline-flex items-center justify-center rounded-full text-crema-50 outline-none;
+    background: linear-gradient(145deg, rgb(255 248 240 / 0.1), rgb(255 248 240 / 0.04));
+    border: 1px solid rgb(255 240 220 / 0.14);
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .chip {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 text-lg font-medium text-crema-100 outline-none;
+    background: rgb(255 248 240 / 0.06);
+    border: 1px solid rgb(255 240 220 / 0.14);
+    min-height: 3.6rem;
+  }
+  .chip[aria-pressed='true'],
+  .chip[aria-checked='true'] {
+    background: linear-gradient(180deg, rgb(243 192 122 / 0.95), rgb(217 138 43 / 0.95));
+    color: var(--color-espresso-950);
+    border-color: transparent;
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgb(255 248 240 / 0.05) 25%,
+      rgb(255 248 240 / 0.12) 50%,
+      rgb(255 248 240 / 0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  .text-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Virtual cursor (gesture mode)
+   ============================================================ */
+@layer components {
+  .virtual-cursor {
+    will-change: transform;
+    --cursor-color: 243 192 122;
+  }
+  .virtual-cursor .cursor-dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 9999px;
+    background: rgb(255 248 240);
+    box-shadow:
+      0 0 0 3px rgb(var(--cursor-color) / 0.95),
+      0 0 18px 6px rgb(var(--cursor-color) / 0.65);
+    transition:
+      transform 0.18s var(--ease-spring),
+      background 0.2s ease;
+  }
+  .virtual-cursor .cursor-ring {
+    --pinch: 0;
+    position: absolute;
+    inset: 14px;
+    border-radius: 9999px;
+    border: 2px solid rgb(var(--cursor-color) / 0.55);
+    /* The ring tightens as the thumb approaches the index finger. */
+    transform: scale(calc(1 - var(--pinch) * 0.35));
+    transition:
+      inset 0.22s var(--ease-spring),
+      border-color 0.2s ease,
+      opacity 0.2s ease;
+    opacity: calc(0.35 + var(--pinch) * 0.65);
+  }
+  .virtual-cursor[data-state='HOVER'] .cursor-ring {
+    inset: 2px;
+    opacity: 1;
+    border-color: rgb(var(--cursor-color) / 0.35);
+  }
+  .virtual-cursor[data-state='HOVER'] .cursor-dot {
+    transform: scale(1.15);
+  }
+  .virtual-cursor[data-state='PINCH'] .cursor-ring {
+    inset: 20px;
+    opacity: 1;
+    border-width: 3px;
+    border-color: rgb(var(--cursor-color));
+  }
+  .virtual-cursor[data-state='PINCH'] .cursor-dot {
+    transform: scale(0.7);
+    background: rgb(var(--cursor-color));
+  }
+  .virtual-cursor[data-state='DISABLED'] {
+    --cursor-color: 160 150 140;
+  }
+  .virtual-cursor[data-state='DISABLED'] .cursor-dot {
+    opacity: 0.6;
+  }
+  .virtual-cursor[data-state='SCROLL'],
+  .virtual-cursor[data-state='SWIPE'] {
+    --cursor-color: 111 214 168;
+  }
+  .virtual-cursor[data-state='SCROLL'] .cursor-ring,
+  .virtual-cursor[data-state='SWIPE'] .cursor-ring {
+    inset: 0;
+    opacity: 1;
+  }
+  .virtual-cursor .cursor-mode {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: flex;
+    width: 2.6rem;
+    height: 2.6rem;
+    margin: -1.3rem 0 0 -1.3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: rgb(111 214 168);
+    color: var(--color-espresso-950);
+    box-shadow: 0 0 20px 4px rgb(111 214 168 / 0.6);
+    animation: var(--animate-pop);
+  }
+  .virtual-cursor .cursor-progress {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+  }
+  .virtual-cursor .cursor-progress circle {
+    fill: none;
+    stroke: rgb(var(--cursor-color));
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 176;
+    stroke-dashoffset: 176;
+    animation-name: cursor-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+  .virtual-cursor .cursor-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .virtual-cursor .cursor-ripple.cursor-ripple-run[data-kind='click'] {
+    border: 3px solid rgb(111 214 168);
+    animation: cursor-ripple 0.45s ease-out;
+  }
+  .virtual-cursor .cursor-ripple.cursor-ripple-run[data-kind='invalid'] {
+    border: 3px solid rgb(242 121 121);
+    animation: cursor-shake 0.4s ease-in-out;
+  }
+}
+
+/* While calibrating, the page shows the raw camera position instead of the mapped cursor. */
+html[data-calibrating='true'] .virtual-cursor {
+  display: none;
+}
+
+@keyframes cursor-progress {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes cursor-ripple {
+  0% {
+    opacity: 1;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+@keyframes cursor-shake {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}

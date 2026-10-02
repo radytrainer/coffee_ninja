@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+/* Admin: light, calm, data-dense. Coffee accents only where they carry meaning. */
+@theme {
+  --font-sans: 'Outfit Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+
+  --color-canvas: #f6f2ec;
+  --color-surface: #ffffff;
+  --color-line: #e7dfd4;
+  --color-ink: #1f140d;
+  --color-ink-2: #5b4a3d;
+  --color-ink-3: #8a7a6c;
+  --color-espresso: #2c1b11;
+  --color-espresso-2: #3d2617;
+  --color-brand: #a0602c;
+  --color-brand-soft: #f6e7d6;
+  --color-good: #2f8a57;
+  --color-good-soft: #e3f3e9;
+  --color-warn: #b7791f;
+  --color-warn-soft: #fbf0db;
+  --color-bad: #c2413b;
+  --color-bad-soft: #fbe5e3;
+  --color-info: #2a6fb0;
+  --color-info-soft: #e3eef9;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface;
+  }
+  .input {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:bg-canvas;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-3;
+  }
+  .th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-3;
+  }
+  .td {
+    @apply px-4 py-3 text-sm text-ink;
+  }
+}

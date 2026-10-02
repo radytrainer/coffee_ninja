@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Outfit Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+
+  --color-espresso-950: #120a06;
+  --color-espresso-900: #1c120c;
+  --color-espresso-800: #2a1b12;
+  --color-espresso-700: #3a2618;
+  --color-crema-50: #fdf8f1;
+  --color-crema-100: #f7ecdd;
+  --color-crema-200: #ecd9bf;
+  --color-crema-300: #dcc09a;
+  --color-crema-400: #b89c7a;
+  --color-caramel-300: #f3c07a;
+  --color-caramel-400: #eaa54f;
+  --color-caramel-500: #d98a2b;
+  --color-mint-300: #9be7c4;
+  --color-mint-400: #6fd6a8;
+  --color-mint-500: #3fbf87;
+  --color-berry-300: #f7a3a3;
+  --color-berry-400: #f27979;
+  --color-berry-500: #e05353;
+  --color-sky-400: #7cc4f5;
+
+  --animate-arrive: arrive 1.6s ease-out;
+  @keyframes arrive {
+    0% {
+      transform: scale(0.94);
+      box-shadow: 0 0 0 0 rgb(243 192 122 / 0.9);
+    }
+    30% {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 10px rgb(243 192 122 / 0.35);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgb(243 192 122 / 0);
+    }
+  }
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-espresso-950 font-sans text-crema-100 antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-caramel-300);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .panel {
+    background: rgb(255 248 240 / 0.04);
+    border: 1px solid rgb(255 240 220 / 0.08);
+  }
+  .card {
+    background: linear-gradient(160deg, rgb(255 248 240 / 0.09), rgb(255 248 240 / 0.04));
+    border: 1px solid rgb(255 240 220 / 0.12);
+  }
+  .kbtn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-lg font-semibold transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
